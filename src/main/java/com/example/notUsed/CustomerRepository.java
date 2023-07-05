@@ -1,4 +1,4 @@
-package com.utk;
+package com.example.notUsed;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -3,9 +3,10 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5332/customer
+    url: jdbc:postgresql://localhost:5332/app_db
     username: user123
     password: 123
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -14,7 +15,21 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   main:
     web-application-type: servlet
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 1
+            client-secret: 1
 
-
+jwt:
+  token:
+    refresh-expiration: 604800000
+    expiration: 43200000
+    secret: f93c5ee85e716b9b4972de36aa565e327d61da933bd51f546ec5434c90d5a7b4

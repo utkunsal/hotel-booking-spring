@@ -1,23 +1,16 @@
-package com.utk;
+package com.example.notUsed;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@SpringBootApplication
 @RestController
 @RequestMapping("api/v1/customers")
-public class Main {
+public class CustomerController {
     private final CustomerRepository customerRepository;
 
-    public Main(CustomerRepository customerRepository) {
+    public CustomerController(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
     }
 
     @GetMapping
@@ -51,22 +44,4 @@ public class Main {
             String name,
             Integer age
     ){}
-
-
-   /* @GetMapping("/greet")
-    public GreetResponse hello(){
-        GreetResponse response =  new GreetResponse(
-                "hello",
-                List.of("apple", "grapefruit", "peach", "chery"),
-                new Person("Alex", "ALEX", 30)
-                );
-        return response;
-    }
-
-    record Person(String name, String lastName, int age){}
-    record GreetResponse(
-            String greet,
-            List<String> fruits,
-            Person person
-    ){}*/
 }
