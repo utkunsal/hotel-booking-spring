@@ -1,4 +1,4 @@
-package com.utk;
+package com.example.notUsed;
 
 import jakarta.persistence.*;
 
