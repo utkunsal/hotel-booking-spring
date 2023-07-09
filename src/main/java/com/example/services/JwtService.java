@@ -6,14 +6,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -45,21 +46,19 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public String generateToken(Map<String, Object> claims, UserDetails userDetails){
-        return createToken(claims, userDetails, jwtExpiration);
+        return createToken(userDetails, jwtExpiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails){
-        return createToken(new HashMap<>(), userDetails, jwtRefreshExpiration);
+        return createToken(userDetails, jwtRefreshExpiration);
     }
 
-    private String createToken(Map<String, Object> claims, UserDetails userDetails, long jwtExpiration){
+    private String createToken(UserDetails userDetails, long jwtExpiration){
         return Jwts
                 .builder()
-                .setClaims(claims)
+                .setClaims(Collections.singletonMap("roles", userDetails.getAuthorities().stream().map(
+                        GrantedAuthority::getAuthority
+                ).collect(Collectors.joining(" "))))
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))

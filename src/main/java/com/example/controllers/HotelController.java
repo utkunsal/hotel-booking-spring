@@ -5,6 +5,7 @@ import com.example.entities.Room;
 import com.example.repositories.HotelRepository;
 import com.example.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ public class HotelController {
     private final RoomRepository roomRepository;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public void addHotelWithRooms(@RequestBody NewHotelWithRoomsRequest request){
 
         // Create a new hotel

@@ -27,9 +27,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/v1/auth/**", "/api/v1/greetings").permitAll();
-                    auth.anyRequest().authenticated();
+                .authorizeHttpRequests(auth -> { auth
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/greetings").permitAll()
+                        .requestMatchers("/api/v1/hotels").hasRole("ADMIN")
+                        .anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

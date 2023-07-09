@@ -8,7 +8,6 @@ import com.example.repositories.TokenRepository;
 import com.example.entities.Role;
 import com.example.entities.User;
 import com.example.repositories.UserRepository;
-import com.example.services.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,11 +31,15 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        return register(request, Role.ROLE_USER);
+    }
+
+    public AuthenticationResponse register(RegisterRequest request, Role role) {
         var user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(role)
                 .build();
         var savedUser = userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
