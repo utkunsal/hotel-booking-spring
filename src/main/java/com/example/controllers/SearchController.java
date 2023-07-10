@@ -20,8 +20,17 @@ public class SearchController {
 
     private final RoomRepository roomRepository;
 
+    /**
+     * Searches for available rooms in the given conditions
+     * @param city          City to search in, Optional.
+     * @param country       Country to search in
+     * @param startDate     The start date of search
+     * @param endDate       The end date of search
+     * @param capacity      Room capacity
+     * @return              Returns a list of available rooms
+     */
     @GetMapping
-    public ResponseEntity<List<Room>> findAvailableRooms(@RequestParam("city") String city,
+    public ResponseEntity<List<Room>> findAvailableRooms(@RequestParam(value = "city", required = false) String city,
                                                          @RequestParam("country") String country,
                                                          @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                          @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,

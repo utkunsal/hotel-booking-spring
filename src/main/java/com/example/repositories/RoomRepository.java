@@ -13,14 +13,14 @@ import java.util.List;
 public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT r FROM Room r " +
             "JOIN r.hotel h " +
-            "WHERE h.city = :city " +
+            "WHERE (:city IS NULL OR h.city = :city) " +
             "AND h.country = :country " +
             "AND r.id NOT IN (" +
             "SELECT b.room.id " +
             "FROM Booking b " +
             "WHERE b.startDate <= :endDate " +
             "AND b.endDate >= :startDate) " +
-            "AND r.capacity >= :capacity")
+            "AND r.capacity = :capacity")
     List<Room> findAvailableRooms(@Param("city") String city,
                                   @Param("country") String country,
                                   @Param("startDate") LocalDate startDate,

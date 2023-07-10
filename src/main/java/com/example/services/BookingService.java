@@ -42,7 +42,7 @@ public class BookingService {
             throw new IllegalStateException("Room is not available for the requested dates");
         }
 
-        // create and save the booking
+        // create the booking
         Booking booking = new Booking();
         booking.setRoom(room);
         booking.setStartDate(request.startDate());

@@ -18,12 +18,21 @@ public class BookingController {
 
     private final BookingService bookingService;
 
+    /**
+     * Creates a new booking and saves it to database
+     * @param request           The booking information
+     * @param authentication    Auth
+     */
     @PostMapping
-    public ResponseEntity<Booking> createBooking(@RequestBody NewBookingRequest request, Authentication authentication) {
-        Booking createdBooking = bookingService.createBooking(request, authentication);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
+    public void createBooking(@RequestBody NewBookingRequest request, Authentication authentication) {
+        bookingService.createBooking(request, authentication);
     }
 
+    /**
+     * Deletes a booking from database
+     * @param id                The booking id to delete
+     * @param authentication    Auth
+     */
     @DeleteMapping("{bookingId}")
     public void removeBooking(@PathVariable("bookingId") Long id, Authentication authentication) {
         bookingService.removeBooking(id, authentication);

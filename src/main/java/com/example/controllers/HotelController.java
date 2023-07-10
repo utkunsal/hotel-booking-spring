@@ -5,14 +5,14 @@ import com.example.entities.Room;
 import com.example.repositories.HotelRepository;
 import com.example.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("api/v1/hotels")
@@ -22,6 +22,31 @@ public class HotelController {
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
 
+    /**
+     * Gets all available hotel locations,
+     * Locations are in format "City, Country" or "Country"
+     * @return A list with alphabetically sorted locations
+     */
+    @GetMapping("/locations")
+    public ResponseEntity<List<String>> getAllLocations(){
+        Set<String> locations = new HashSet<>();
+        List<Hotel> hotels = hotelRepository.findAll();
+        hotels.forEach(hotel -> {
+            locations.add(hotel.getCountry());
+            locations.add(hotel.getCity()+", "+hotel.getCountry());
+        });
+
+        return ResponseEntity.ok(locations.stream().sorted((a, b) -> {
+            String location1 = a.contains(",") ? a.substring(a.indexOf(",") + 2)+"a" : a;
+            String location2 = b.contains(",") ? b.substring(b.indexOf(",") + 2)+"a" : b;
+            return location1.compareTo(location2);
+        }).toList());
+    }
+
+    /**
+     * Creates new hotel and rooms and saves them to database
+     * @param request The hotel and rooms information
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public void addHotelWithRooms(@RequestBody NewHotelWithRoomsRequest request){
