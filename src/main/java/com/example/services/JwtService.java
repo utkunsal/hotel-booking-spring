@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -77,5 +79,24 @@ public class JwtService {
     private Key getSignInKey(){
         byte[] bytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(bytes);
+    }
+
+    public String getJwtAccessFromCookie(HttpServletRequest request) {
+        return getFromCookie(request, "access_token");
+    }
+
+    public String getJwtRefreshFromCookie(HttpServletRequest request) {
+        return getFromCookie(request, "refresh_token");
+    }
+
+    public String getFromCookie(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null)
+            for (Cookie cookie: cookies) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
+                }
+            }
+        return null;
     }
 }

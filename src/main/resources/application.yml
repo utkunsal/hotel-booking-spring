@@ -1,5 +1,7 @@
 server:
   port: 8080
+  error:
+    include-message: always
 
 spring:
   datasource:
@@ -30,8 +32,8 @@ spring:
 
 jwt:
   token:
-    refresh-expiration: 604800000
-    expiration: 43200000
+    expiration: 43200000 #0.5d
+    refresh-expiration: 604800000 #7d
     secret: f93c5ee85e716b9b4972de36aa565e327d61da933bd51f546ec5434c90d5a7b4
 
 adminUser:

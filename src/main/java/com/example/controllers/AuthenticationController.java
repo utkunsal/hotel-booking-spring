@@ -4,16 +4,13 @@ import com.example.auth.AuthenticationRequest;
 import com.example.auth.AuthenticationResponse;
 import com.example.services.AuthenticationService;
 import com.example.auth.RegisterRequest;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -23,18 +20,32 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request){
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request){
+        authenticationService.register(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+    public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequest request, HttpServletResponse response){
+        AuthenticationResponse authResponse = authenticationService.authenticate(request);
+        addCookie("access_token", authResponse.getToken(), response);
+        addCookie("refresh_token", authResponse.getRefreshToken(), response);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        authenticationService.refreshToken(request, response);
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response){
+        AuthenticationResponse authResponse = authenticationService.refreshToken(request);
+        addCookie("access_token", authResponse.getToken(), response);
+        addCookie("refresh_token", authResponse.getRefreshToken(), response);
     }
 
+    private void addCookie(String name, String content, HttpServletResponse response){
+        Cookie cookie = new Cookie(name, content);
+        cookie.setMaxAge(86400000);
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+    }
 }

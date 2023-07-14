@@ -8,17 +8,14 @@ import com.example.repositories.TokenRepository;
 import com.example.entities.Role;
 import com.example.entities.User;
 import com.example.repositories.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -58,14 +55,25 @@ public class AuthenticationService {
         return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).build();
     }
 
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public AuthenticationResponse refreshToken(HttpServletRequest request) {
 
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
-        }
-        final String refreshToken = authHeader.substring(7);
-        final String email = jwtService.extractEmail(refreshToken);
+        // get token
+        String refreshToken = jwtService.getJwtRefreshFromCookie(request);
+
+        /*if (refreshToken == null){
+            final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return null;
+            }
+            refreshToken = authHeader.substring(7);
+        }*/
+
+        // get email
+        String email = null;
+        try {
+            email = jwtService.extractEmail(refreshToken);
+        } catch (ExpiredJwtException | IllegalArgumentException ignored){}
+
         if (email != null) {
 
             var user = userRepository.findByEmail(email).orElse(null);
@@ -74,13 +82,13 @@ public class AuthenticationService {
                 var accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);
                 saveToken(user, accessToken);
-                var authResponse = AuthenticationResponse.builder()
+                return AuthenticationResponse.builder()
                         .token(accessToken)
                         .refreshToken(refreshToken)
                         .build();
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
+        return null;
     }
 
     private void saveToken(User user, String jwtToken) {

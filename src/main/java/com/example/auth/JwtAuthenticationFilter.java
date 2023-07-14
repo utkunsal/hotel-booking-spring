@@ -2,6 +2,7 @@ package com.example.auth;
 
 import com.example.repositories.TokenRepository;
 import com.example.services.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,16 +32,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        // look for header
-        final String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // get jwt token
+        String jwtToken = jwtService.getJwtAccessFromCookie(request);
+        /*if (jwtToken == null){
+            // look for header
+            final String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            jwtToken = authHeader.substring(7);
+        }*/
 
-        // get token and email
-        final String jwtToken = authHeader.substring(7);
-        final String email = jwtService.extractEmail(jwtToken);
+        // get email
+        String email = null;
+        try {
+            email = jwtService.extractEmail(jwtToken);
+        } catch (ExpiredJwtException | IllegalArgumentException ignored){}
 
         // check email and auth
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
