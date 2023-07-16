@@ -28,15 +28,16 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
-        return register(request, Role.ROLE_USER);
+        return register(request, Role.ROLE_USER, false);
     }
 
-    public AuthenticationResponse register(RegisterRequest request, Role role) {
+    public AuthenticationResponse register(RegisterRequest request, Role role, boolean verified) {
         var user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(role)
+                .verified(verified)
                 .build();
         var savedUser = userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);

@@ -38,7 +38,7 @@ public class AdminUserInitializer implements CommandLineRunner {
                     .email(adminEmail)
                     .password(adminPassword)
                     .build();
-            jwtToken = authenticationService.register(newAdminRequest, Role.ROLE_ADMIN).getToken();
+            jwtToken = authenticationService.register(newAdminRequest, Role.ROLE_ADMIN, true).getToken();
         } else {
 
             // get token for existing admin

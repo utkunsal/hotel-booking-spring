@@ -1,6 +1,7 @@
 package com.example.controllers;
 
-import com.example.dtos.ReviewDTO;
+import com.example.entities.User;
+import com.example.responses.ReviewResponse;
 import com.example.services.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/reviews")
@@ -20,11 +20,34 @@ public class ReviewController {
     /**
      * Gets reviews of a hotel
      * @param id    id of the hotel
-     * @return      Returns a list of ReviewDTOs
+     * @param page  the page number
+     * @param size  size of reviews in a page
+     * @return      Returns a ReviewResponse which includes reviews and page information
      */
     @GetMapping("{hotelId}")
-    public ResponseEntity<List<ReviewDTO>> getReviews(@PathVariable("hotelId") Long id) {
-        return ResponseEntity.ok(reviewService.getReviews(id));
+    public ResponseEntity<ReviewResponse> getReviews(
+            @PathVariable("hotelId") Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(reviewService.getReviews(id, authentication, page, size));
+    }
+
+    /**
+     * Gets reviews of the logged-in user
+     * @param authentication    Auth
+     * @param page              the page number
+     * @param size              size of reviews in a page
+     * @return                  Returns a ReviewResponse which includes reviews and page information
+     */
+    @GetMapping("/user")
+    public ResponseEntity<ReviewResponse> getReviews(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(reviewService.getUserReviews((User) authentication.getPrincipal(), page, size));
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.example.dtos;
 
-import com.example.entities.Hotel;
-import com.example.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

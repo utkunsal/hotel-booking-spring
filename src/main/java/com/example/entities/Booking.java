@@ -27,4 +27,6 @@ public class Booking {
 
     private LocalDate startDate;
     private LocalDate endDate;
+
+    private  boolean verified;
 }

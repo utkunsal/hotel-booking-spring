@@ -18,7 +18,7 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(length = 1024)
     private String text;
     private Integer stars;
     private LocalDateTime date;
@@ -27,4 +27,6 @@ public class Review {
     private Hotel hotel;
     @ManyToOne
     private User user;
+
+    private  boolean verified;
 }

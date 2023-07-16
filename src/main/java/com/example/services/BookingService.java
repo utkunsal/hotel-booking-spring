@@ -6,7 +6,11 @@ import com.example.entities.Room;
 import com.example.entities.User;
 import com.example.repositories.BookingRepository;
 import com.example.repositories.RoomRepository;
+import com.example.responses.BookingResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -43,11 +47,13 @@ public class BookingService {
         }
 
         // create the booking
+        User user = (User) authentication.getPrincipal();
         Booking booking = new Booking();
         booking.setRoom(room);
         booking.setStartDate(request.startDate());
         booking.setEndDate(request.endDate());
-        booking.setUser((User) authentication.getPrincipal());
+        booking.setUser(user);
+        booking.setVerified(user.isVerified());
 
         // save the booking
         return bookingRepository.save(booking);
@@ -88,5 +94,26 @@ public class BookingService {
         return conflictingBookings.isEmpty();
     }
 
+    /**
+     * Gets bookings of the given user
+     * @param user  the user
+     * @param page  the page number
+     * @param size  size of bookings in a page
+     * @return      returns a BookingResponse which includes bookings and page information
+     */
+    public BookingResponse getUserBookings(User user, int page, int size) {
+        // get bookings
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Booking> bookingPage = bookingRepository.findAllByUser(user, pageable);
+        List<Booking> bookings = bookingPage.getContent();
+        bookings.forEach(booking -> booking.setUser(null));
+        // return response
+        return BookingResponse.builder()
+                .bookings(bookings)
+                .currentPage(bookingPage.getNumber())
+                .totalPages(bookingPage.getTotalPages())
+                .totalItems(bookingPage.getTotalElements())
+                .build();
+    }
 }
 
