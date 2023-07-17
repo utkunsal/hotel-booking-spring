@@ -21,8 +21,8 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request){
-        authenticationService.register(request);
-        return ResponseEntity.ok().build();
+        AuthenticationResponse authResponse = authenticationService.register(request);
+        return ResponseEntity.ok(new UserDTO(authResponse.getName()));
     }
 
     @PostMapping("/authenticate")
@@ -30,7 +30,7 @@ public class AuthenticationController {
         AuthenticationResponse authResponse = authenticationService.authenticate(request);
         addCookie("access_token", authResponse.getToken(), response);
         addCookie("refresh_token", authResponse.getRefreshToken(), response);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new UserDTO(authResponse.getName()));
     }
 
     @PostMapping("/refresh")
@@ -48,4 +48,8 @@ public class AuthenticationController {
         cookie.setPath("/");
         response.addCookie(cookie);
     }
+
+    record UserDTO(
+            String name
+    ){}
 }

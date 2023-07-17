@@ -43,7 +43,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         saveToken(savedUser, jwtToken);
-        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).build();
+        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).name(user.getName()).build();
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -53,7 +53,7 @@ public class AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
         saveToken(user, jwtToken);
-        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).build();
+        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).name(user.getName()).build();
     }
 
     public AuthenticationResponse refreshToken(HttpServletRequest request) {
