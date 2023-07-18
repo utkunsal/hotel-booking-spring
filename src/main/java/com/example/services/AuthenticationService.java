@@ -11,10 +11,15 @@ import com.example.repositories.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -27,11 +32,33 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public ResponseEntity<?> register(RegisterRequest request) {
         return register(request, Role.ROLE_USER, false);
     }
 
-    public AuthenticationResponse register(RegisterRequest request, Role role, boolean verified) {
+    public ResponseEntity<?> register(RegisterRequest request, Role role, boolean verified) {
+        // check if email, password and name is valid
+        if (request.getName() == null || request.getEmail() == null || request.getPassword() == null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Name, email or password cannot be empty!");
+        }
+        if (request.getName().length() < 3 || request.getName().length() > 40 || request.getPassword().length() < 3){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid name or password!");
+        }
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."+
+                "[a-zA-Z0-9_+&*-]+)*@" +
+                "(?:[a-zA-Z0-9-]+\\.)+[a-z" +
+                "A-Z]{2,7}$";
+        Pattern pat = Pattern.compile(emailRegex);
+        if (!pat.matcher(request.getEmail()).matches()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email!");
+        }
+        // check if email is used before
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+        if (optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body("Email is not available: " + request.getEmail());
+        }
+        // create user
         var user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -39,11 +66,8 @@ public class AuthenticationService {
                 .role(role)
                 .verified(verified)
                 .build();
-        var savedUser = userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        saveToken(savedUser, jwtToken);
-        return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).name(user.getName()).build();
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -53,6 +77,7 @@ public class AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
         saveToken(user, jwtToken);
+        saveToken(user, refreshToken);
         return AuthenticationResponse.builder().token(jwtToken).refreshToken(refreshToken).name(user.getName()).build();
     }
 
@@ -60,14 +85,6 @@ public class AuthenticationService {
 
         // get token
         String refreshToken = jwtService.getJwtRefreshFromCookie(request);
-
-        /*if (refreshToken == null){
-            final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return null;
-            }
-            refreshToken = authHeader.substring(7);
-        }*/
 
         // get email
         String email = null;
@@ -77,15 +94,21 @@ public class AuthenticationService {
 
         if (email != null) {
 
+            var isTokenValid = tokenRepository.findByToken(refreshToken)
+                    .map(t -> !t.isRevoked())
+                    .orElse(false);
+
             var user = userRepository.findByEmail(email).orElse(null);
-            if (user != null && jwtService.isTokenValid(refreshToken, user)) {
+            if (user != null && jwtService.isTokenValid(refreshToken, user) && isTokenValid) {
 
                 var accessToken = jwtService.generateToken(user);
+                var newRefreshToken = jwtService.generateRefreshToken(user);
                 revokeAllUserTokens(user);
                 saveToken(user, accessToken);
+                saveToken(user, newRefreshToken);
                 return AuthenticationResponse.builder()
                         .token(accessToken)
-                        .refreshToken(refreshToken)
+                        .refreshToken(newRefreshToken)
                         .build();
             }
         }
@@ -96,7 +119,6 @@ public class AuthenticationService {
         var token = Token.builder()
                 .user(user)
                 .token(jwtToken)
-                .expired(false)
                 .revoked(false)
                 .build();
         tokenRepository.save(token);
@@ -106,7 +128,6 @@ public class AuthenticationService {
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
         if (!validUserTokens.isEmpty()) {
             validUserTokens.forEach(token -> {
-                token.setExpired(true);
                 token.setRevoked(true);
             });
             tokenRepository.saveAll(validUserTokens);

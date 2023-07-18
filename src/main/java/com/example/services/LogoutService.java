@@ -1,10 +1,8 @@
 package com.example.services;
 
-import com.example.entities.Token;
 import com.example.entities.User;
 import com.example.repositories.TokenRepository;
 import com.example.repositories.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,25 +11,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
 
-    private final JwtService jwtService;
     private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         // revoke tokens
-        revokeTokens(request);
+        String token = jwtService.getJwtAccessFromCookie(request);
+        Optional<User> user = userRepository.findByEmail(jwtService.extractEmail(token));
+        user.ifPresent(this::revokeAllUserTokens);
         // clear context
         SecurityContextHolder.clearContext();
     }
 
-    private void revokeTokens(HttpServletRequest request) {
+    /*private void revokeTokens(HttpServletRequest request) {
         // get tokens
         String accessToken = jwtService.getJwtAccessFromCookie(request);
         String refreshToken = jwtService.getJwtRefreshFromCookie(request);
@@ -41,10 +42,19 @@ public class LogoutService implements LogoutHandler {
         tokenRepository.findByToken(refreshToken).ifPresent(tokens::add);
         if (!tokens.isEmpty()) {
             tokens.forEach(token -> {
-                token.setExpired(true);
                 token.setRevoked(true);
             });
             tokenRepository.saveAll(tokens);
+        }
+    }*/
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        if (!validUserTokens.isEmpty()) {
+            validUserTokens.forEach(token -> {
+                token.setRevoked(true);
+            });
+            tokenRepository.saveAll(validUserTokens);
         }
     }
 }

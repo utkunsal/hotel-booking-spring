@@ -1,6 +1,5 @@
 package com.example.components;
 
-import com.example.auth.AuthenticationRequest;
 import com.example.auth.RegisterRequest;
 import com.example.entities.Role;
 import com.example.entities.User;
@@ -28,7 +27,6 @@ public class AdminUserInitializer implements CommandLineRunner {
     @Override
     public void run(String...args) throws Exception {
 
-        String jwtToken;
         Optional<User> user = userRepository.findByEmail(adminEmail);
         if (user.isEmpty()) {
 
@@ -38,19 +36,10 @@ public class AdminUserInitializer implements CommandLineRunner {
                     .email(adminEmail)
                     .password(adminPassword)
                     .build();
-            jwtToken = authenticationService.register(newAdminRequest, Role.ROLE_ADMIN, true).getToken();
-        } else {
-
-            // get token for existing admin
-            var adminRequest = AuthenticationRequest.builder()
-                    .email(adminEmail)
-                    .password(adminPassword)
-                    .build();
-            jwtToken = authenticationService.authenticate(adminRequest).getToken();
+            authenticationService.register(newAdminRequest, Role.ROLE_ADMIN, true);
         }
         System.out.println("\nAdmin Email: " + adminEmail);
         System.out.println("Admin Password: " + adminPassword);
-        System.out.println("Admin Token: " + jwtToken + "\n");
 
     }
 }

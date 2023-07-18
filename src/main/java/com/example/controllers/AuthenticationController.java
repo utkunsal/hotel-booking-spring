@@ -21,8 +21,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request){
-        AuthenticationResponse authResponse = authenticationService.register(request);
-        return ResponseEntity.ok(new UserDTO(authResponse.getName()));
+        return authenticationService.register(request);
     }
 
     @PostMapping("/authenticate")
@@ -34,10 +33,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response){
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response){
         AuthenticationResponse authResponse = authenticationService.refreshToken(request);
-        addCookie("access_token", authResponse.getToken(), response);
-        addCookie("refresh_token", authResponse.getRefreshToken(), response);
+        if (authResponse != null) {
+            addCookie("access_token", authResponse.getToken(), response);
+            addCookie("refresh_token", authResponse.getRefreshToken(), response);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
     }
 
     private void addCookie(String name, String content, HttpServletResponse response){

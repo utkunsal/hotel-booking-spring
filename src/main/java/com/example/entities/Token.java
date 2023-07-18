@@ -18,7 +18,6 @@ public class Token {
     public Long id;
     @Column(unique = true)
     public String token;
-    public boolean expired;
     public boolean revoked;
 
     @ManyToOne

@@ -34,20 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // get jwt token
         String jwtToken = jwtService.getJwtAccessFromCookie(request);
-        /*if (jwtToken == null){
-            // look for header
-            final String authHeader = request.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            jwtToken = authHeader.substring(7);
-        }*/
 
         // get email
         String email = null;
         try {
             email = jwtService.extractEmail(jwtToken);
+            if (email.equals("")) email = null;
         } catch (ExpiredJwtException | IllegalArgumentException ignored){}
 
         // check email and auth
@@ -55,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
             var isTokenValid = tokenRepository.findByToken(jwtToken)
-                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .map(t -> !t.isRevoked())
                     .orElse(false);
 
             // check if token is valid
