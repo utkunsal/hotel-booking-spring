@@ -45,9 +45,11 @@ public class ReviewService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Review> reviewPage = reviewRepository.findAllByHotelAndVerified(hotel, true, pageable);
         // also get user's unverified reviews and combine them
-        reviewDTOs.addAll(reviewRepository
-                .findAllByUserAndHotelAndVerified((User) authentication.getPrincipal(), hotel, false)
-                .stream().map(this::convertReviewToDTO).toList());
+        if (page == 0){
+            reviewDTOs.addAll(reviewRepository
+                    .findAllByUserAndHotelAndVerified((User) authentication.getPrincipal(), hotel, false)
+                    .stream().map(this::convertReviewToDTO).toList());
+        }
         reviewDTOs.addAll(reviewPage.map(this::convertReviewToDTO).getContent());
         // return reviews
         return ReviewResponse.builder()
@@ -131,6 +133,7 @@ public class ReviewService {
         ReviewDTO reviewDTO = new ReviewDTO();
         BeanUtils.copyProperties(review, reviewDTO);
         reviewDTO.setUserDisplayName(review.getUser().getName());
+        reviewDTO.setHotelName(review.getHotel().getName());
         return reviewDTO;
     }
 }

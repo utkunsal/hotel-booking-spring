@@ -15,4 +15,5 @@ public class ReviewDTO {
     private int stars;
     private LocalDateTime date;
     private String userDisplayName;
+    private String hotelName;
 }
