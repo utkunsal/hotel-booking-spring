@@ -4,6 +4,7 @@ import com.example.dtos.HotelWithRoomsDTO;
 import com.example.dtos.RoomDTO;
 import com.example.entities.Hotel;
 import com.example.entities.Room;
+import com.example.repositories.ReviewRepository;
 import com.example.repositories.RoomRepository;
 import com.example.responses.SearchResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class SearchService {
 
     private final RoomRepository roomRepository;
+    private final ReviewRepository reviewRepository;
 
     /**
      * Gets available hotels with rooms according to given parameters
@@ -48,8 +50,14 @@ public class SearchService {
                 roomRepository.findById(id).ifPresent(room -> {
                     rooms.add(convertRoomToDTO(room));
                 });
-            rooms.sort(Comparator.comparing(RoomDTO::getPrice)); // to sort according to price
-            out.add(new HotelWithRoomsDTO((Hotel) item[0], rooms));
+            Hotel hotel = (Hotel) item[0];
+            // to sort according to price
+            rooms.sort(Comparator.comparing(RoomDTO::getPrice));
+            // to get review count
+            int reviewCount = reviewRepository.getReviewCountByHotel(hotel);
+            // to get avg rating
+            Double avgRating = reviewRepository.getAverageRatingForHotel(hotel);
+            out.add(new HotelWithRoomsDTO(hotel, rooms, reviewCount, avgRating));
         }
         // build return response
         return SearchResponse.builder()

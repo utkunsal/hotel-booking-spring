@@ -9,10 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/v1/hotels")
@@ -56,6 +53,7 @@ public class HotelController {
         hotel.setName(request.name());
         hotel.setCity(request.city());
         hotel.setCountry(request.country());
+        hotel.setImageUrls(request.imageUrls());
 
         // Save the hotel to db
         Hotel savedHotel = hotelRepository.save(hotel);
@@ -69,6 +67,8 @@ public class HotelController {
             room.setCapacity(roomRequest.capacity());
             room.setPrice(roomRequest.price());
             room.setHotel(savedHotel);
+            room.setSize(roomRequest.size());
+            room.setAmenities(roomRequest.amenities());
             rooms.add(room);
         }
 
@@ -80,12 +80,15 @@ public class HotelController {
             String name,
             String city,
             String country,
-            List<NewRoomRequest> rooms
+            List<NewRoomRequest> rooms,
+            List<String> imageUrls
     ) {
         record NewRoomRequest(
                 String number,
                 int capacity,
-                double price
+                double price,
+                List<String> amenities,
+                String size
         ) {
         }
     }

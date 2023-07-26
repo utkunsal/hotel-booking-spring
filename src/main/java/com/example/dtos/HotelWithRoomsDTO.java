@@ -13,4 +13,6 @@ import java.util.List;
 public class HotelWithRoomsDTO {
     private Hotel hotel;
     private List<RoomDTO> rooms;
+    private int reviewCount;
+    private Double avgRating;
 }
