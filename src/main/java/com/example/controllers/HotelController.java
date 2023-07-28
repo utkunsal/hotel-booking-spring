@@ -1,14 +1,18 @@
 package com.example.controllers;
 
+import com.example.dtos.HotelWithRoomsDTO;
 import com.example.entities.Hotel;
 import com.example.entities.Room;
 import com.example.repositories.HotelRepository;
 import com.example.repositories.RoomRepository;
+import com.example.services.SearchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -18,6 +22,7 @@ public class HotelController {
 
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
+    private final SearchService searchService;
 
     /**
      * Gets all available hotel locations,
@@ -38,6 +43,25 @@ public class HotelController {
             String location2 = b.contains(",") ? b.substring(b.indexOf(",") + 2)+"a" : b;
             return location1.compareTo(location2);
         }).toList());
+    }
+
+    /**
+     * Gets available rooms for given hotel
+     * @param hotelId       id of the hotel
+     * @param startDate     The start date of search
+     * @param endDate       The end date of search
+     * @param capacity      Room capacity
+     * @return              Returns a HotelWithRoomsDTO which includes hotel with available rooms
+     */
+    @GetMapping({"{hotelId}"})
+    public ResponseEntity<HotelWithRoomsDTO> getAvailableRoomsForHotel(
+            @PathVariable("hotelId") Long hotelId,
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam("capacity") int capacity
+    ) {
+        HotelWithRoomsDTO availableRooms = searchService.getAvailableRoomsForHotel(hotelId, startDate, endDate, capacity);
+        return ResponseEntity.ok(availableRooms);
     }
 
     /**
@@ -68,7 +92,7 @@ public class HotelController {
             room.setPrice(roomRequest.price());
             room.setHotel(savedHotel);
             room.setSize(roomRequest.size());
-            room.setAmenities(roomRequest.amenities());
+            room.setAmenities(roomRequest.amenities().stream().sorted().toList());
             rooms.add(room);
         }
 

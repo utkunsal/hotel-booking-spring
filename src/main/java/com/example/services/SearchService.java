@@ -48,7 +48,9 @@ public class SearchService {
             List<RoomDTO> rooms = new ArrayList<>();
             for(Long id:(Long[]) item[1])
                 roomRepository.findById(id).ifPresent(room -> {
-                    rooms.add(convertRoomToDTO(room));
+                    // to not include rooms with the same features
+                    if (!(containsSize(rooms, room.getSize()) && containsAmenities(rooms, room.getAmenities())))
+                        rooms.add(convertRoomToDTO(room));
                 });
             Hotel hotel = (Hotel) item[0];
             // to sort according to price
@@ -68,10 +70,51 @@ public class SearchService {
                 .build();
     }
 
+    /**
+     * Gets available rooms for given hotel
+     * @param hotelId       id of the hotel
+     * @param startDate     The start date of search
+     * @param endDate       The end date of search
+     * @param capacity      Room capacity
+     * @return              Returns a HotelWithRoomsDTO which includes hotel with available rooms
+     */
+    public HotelWithRoomsDTO getAvailableRoomsForHotel(Long hotelId, LocalDate startDate, LocalDate endDate, int capacity) {
+        // get search results
+        List<Room> content = roomRepository.findAvailableRoomsForHotel(hotelId, startDate, endDate, capacity);
+        // convert rooms to RoomDTO objects
+        List<RoomDTO> rooms = new ArrayList<>();
+        for (Room room: content){
+            RoomDTO roomDTO = convertRoomToDTO(room);
+            // to not include rooms with the same features
+            if (!(containsSize(rooms, roomDTO.getSize()) && containsAmenities(rooms, roomDTO.getAmenities())))
+                rooms.add(roomDTO);
+        }
+        rooms.sort(Comparator.comparing(RoomDTO::getPrice));
+        if (!content.isEmpty()){
+            // get the hotel entity
+            Hotel hotel = content.get(0).getHotel();
+            // to get review count
+            int reviewCount = reviewRepository.getReviewCountByHotel(hotel);
+            // to get avg rating
+            Double avgRating = reviewRepository.getAverageRatingForHotel(hotel);
+            // build return response
+            return new HotelWithRoomsDTO(hotel, rooms, reviewCount, avgRating);
+        }
+        return null;
+    }
+
     private RoomDTO convertRoomToDTO(Room room) {
         RoomDTO roomDTO = new RoomDTO();
         BeanUtils.copyProperties(room, roomDTO);
         return roomDTO;
+    }
+
+    private boolean containsSize(List<RoomDTO> list, String size) {
+        return list.stream().anyMatch(r -> r.getSize().equals(size));
+    }
+
+    private boolean containsAmenities(List<RoomDTO> list, List<String> amenities) {
+        return list.stream().anyMatch(r -> r.getAmenities().toString().equals(amenities.toString()));
     }
 
 }
