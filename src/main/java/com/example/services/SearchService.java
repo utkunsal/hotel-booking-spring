@@ -4,6 +4,7 @@ import com.example.dtos.HotelWithRoomsDTO;
 import com.example.dtos.RoomDTO;
 import com.example.entities.Hotel;
 import com.example.entities.Room;
+import com.example.repositories.HotelRepository;
 import com.example.repositories.ReviewRepository;
 import com.example.repositories.RoomRepository;
 import com.example.responses.SearchResponse;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class SearchService {
 
     private final RoomRepository roomRepository;
     private final ReviewRepository reviewRepository;
+    private final HotelRepository hotelRepository;
 
     /**
      * Gets available hotels with rooms according to given parameters
@@ -90,17 +93,18 @@ public class SearchService {
                 rooms.add(roomDTO);
         }
         rooms.sort(Comparator.comparing(RoomDTO::getPrice));
-        if (!content.isEmpty()){
-            // get the hotel entity
-            Hotel hotel = content.get(0).getHotel();
-            // to get review count
-            int reviewCount = reviewRepository.getReviewCountByHotel(hotel);
-            // to get avg rating
-            Double avgRating = reviewRepository.getAverageRatingForHotel(hotel);
-            // build return response
-            return new HotelWithRoomsDTO(hotel, rooms, reviewCount, avgRating);
+        // get the hotel entity
+        Optional<Hotel> optionalHotel = hotelRepository.findById(hotelId);
+        if (optionalHotel.isEmpty()) {
+            return null;
         }
-        return null;
+        Hotel hotel = optionalHotel.get();
+        // to get review count
+        int reviewCount = reviewRepository.getReviewCountByHotel(hotel);
+        // to get avg rating
+        Double avgRating = reviewRepository.getAverageRatingForHotel(hotel);
+        // build return response
+        return new HotelWithRoomsDTO(hotel, rooms, reviewCount, avgRating);
     }
 
     private RoomDTO convertRoomToDTO(Room room) {
