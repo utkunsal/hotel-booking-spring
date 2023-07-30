@@ -40,7 +40,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/api/v1/greetings",
-                                "/api/v1/hotels/locations"
+                                "/api/v1/hotels/locations",
+                                "/api/v1/hotels/{hotelId}",
+                                "/api/v1/reviews/{hotelId}",
+                                "/api/v1/search"
                                 ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/hotels").hasRole("ADMIN")

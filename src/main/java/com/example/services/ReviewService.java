@@ -45,7 +45,7 @@ public class ReviewService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Review> reviewPage = reviewRepository.findAllByHotelAndVerified(hotel, true, pageable);
         // also get user's unverified reviews and combine them
-        if (page == 0){
+        if (page == 0 && authentication != null){
             reviewDTOs.addAll(reviewRepository
                     .findAllByUserAndHotelAndVerified((User) authentication.getPrincipal(), hotel, false)
                     .stream().map(this::convertReviewToDTO).toList());
