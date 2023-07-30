@@ -22,6 +22,8 @@ public class Hotel {
     private String name;
     private String city;
     private String country;
+    @Column(length = 1024)
+    private String description;
     @ElementCollection
     private List<String> imageUrls;
 }

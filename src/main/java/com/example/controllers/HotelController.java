@@ -77,6 +77,7 @@ public class HotelController {
         hotel.setName(request.name());
         hotel.setCity(request.city());
         hotel.setCountry(request.country());
+        hotel.setDescription(request.description());
         hotel.setImageUrls(request.imageUrls());
 
         // Save the hotel to db
@@ -104,6 +105,7 @@ public class HotelController {
             String name,
             String city,
             String country,
+            String description,
             List<NewRoomRequest> rooms,
             List<String> imageUrls
     ) {

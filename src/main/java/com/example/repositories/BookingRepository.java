@@ -21,6 +21,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                           LocalDate startDate,
                                           LocalDate endDate);
 
-    Page<Booking> findAllByUser(User user, Pageable pageable);
+    Page<Booking> findAllByUserOrderByStartDateDesc(User user, Pageable pageable);
 }
 

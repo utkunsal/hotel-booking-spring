@@ -107,7 +107,7 @@ public class BookingService {
     public BookingResponse getUserBookings(User user, int page, int size) {
         // get bookings
         Pageable pageable = PageRequest.of(page, size);
-        Page<Booking> bookingPage = bookingRepository.findAllByUser(user, pageable);
+        Page<Booking> bookingPage = bookingRepository.findAllByUserOrderByStartDateDesc(user, pageable);
         List<Booking> bookings = bookingPage.getContent();
         // return response
         return BookingResponse.builder()
