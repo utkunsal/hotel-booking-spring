@@ -1,6 +1,7 @@
 package com.example.services;
 
 import com.example.controllers.BookingController;
+import com.example.dtos.BookingDTO;
 import com.example.entities.Booking;
 import com.example.entities.Room;
 import com.example.entities.User;
@@ -8,6 +9,7 @@ import com.example.repositories.BookingRepository;
 import com.example.repositories.RoomRepository;
 import com.example.responses.BookingResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +33,9 @@ public class BookingService {
      *
      * @param request           The request object containing booking details
      * @param authentication    The auth object
-     * @return                  The created booking
+     * @return                  The created booking in BookingDTO
      */
-    public Booking createBooking(BookingController.NewBookingRequest request, Authentication authentication) {
+    public BookingDTO createBooking(BookingController.NewBookingRequest request, Authentication authentication) {
         // get room by id
         Optional<Room> optionalRoom = roomRepository.findById(request.roomId());
         if (optionalRoom.isEmpty()) {
@@ -55,8 +57,9 @@ public class BookingService {
         booking.setUser(user);
         booking.setVerified(user.isVerified());
 
-        // save the booking
-        return bookingRepository.save(booking);
+        // save the booking and return bookingDTO
+        Booking savedBooking =  bookingRepository.save(booking);
+        return convertBookingToDTO(savedBooking);
     }
 
     /**
@@ -106,14 +109,19 @@ public class BookingService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Booking> bookingPage = bookingRepository.findAllByUser(user, pageable);
         List<Booking> bookings = bookingPage.getContent();
-        bookings.forEach(booking -> booking.setUser(null));
         // return response
         return BookingResponse.builder()
-                .bookings(bookings)
+                .bookings(bookings.stream().map(this::convertBookingToDTO).toList())
                 .currentPage(bookingPage.getNumber())
                 .totalPages(bookingPage.getTotalPages())
                 .totalItems(bookingPage.getTotalElements())
                 .build();
+    }
+
+    private BookingDTO convertBookingToDTO(Booking booking) {
+        BookingDTO bookingDTO = new BookingDTO();
+        BeanUtils.copyProperties(booking, bookingDTO);
+        return bookingDTO;
     }
 }
 

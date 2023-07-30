@@ -1,6 +1,6 @@
 package com.example.responses;
 
-import com.example.entities.Booking;
+import com.example.dtos.BookingDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingResponse {
-    private List<Booking> bookings;
+    private List<BookingDTO> bookings;
     private int currentPage;
     private int totalPages;
     private long totalItems;

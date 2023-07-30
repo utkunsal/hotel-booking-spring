@@ -1,6 +1,7 @@
 package com.example.controllers;
 
 
+import com.example.dtos.BookingDTO;
 import com.example.entities.User;
 import com.example.responses.BookingResponse;
 import com.example.services.BookingService;
@@ -39,10 +40,11 @@ public class BookingController {
      * Creates a new booking and saves it to database
      * @param request           The booking information
      * @param authentication    Auth
+     * @return                  The created booking in BookingDTO
      */
     @PostMapping
-    public void createBooking(@RequestBody NewBookingRequest request, Authentication authentication) {
-        bookingService.createBooking(request, authentication);
+    public ResponseEntity<BookingDTO> createBooking(@RequestBody NewBookingRequest request, Authentication authentication) {
+        return ResponseEntity.ok(bookingService.createBooking(request, authentication));
     }
 
     /**
