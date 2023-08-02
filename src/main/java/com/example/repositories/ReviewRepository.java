@@ -14,9 +14,9 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    Page<Review> findAllByHotelAndVerified(Hotel hotel, boolean verified, Pageable pageable);
-    Page<Review> findAllByUser(User user, Pageable pageable);
-    List<Review> findAllByUserAndHotelAndVerified(User user, Hotel hotel, boolean verified);
+    Page<Review> findAllByHotelAndVerifiedOrderByDateDesc(Hotel hotel, boolean verified, Pageable pageable);
+    Page<Review> findAllByUserOrderByDateDesc(User user, Pageable pageable);
+    List<Review> findAllByUserAndHotelAndVerifiedOrderByDateDesc(User user, Hotel hotel, boolean verified);
     @Query("SELECT COUNT(r) FROM Review r WHERE r.hotel = :hotel AND r.verified = true")
     int getReviewCountByHotel(@Param("hotel") Hotel hotel);
     @Query("SELECT AVG(r.stars) FROM Review r WHERE r.hotel = :hotel AND r.verified = true")

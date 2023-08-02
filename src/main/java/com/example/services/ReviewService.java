@@ -43,11 +43,11 @@ public class ReviewService {
         // get reviews
         List<ReviewDTO> reviewDTOs = new ArrayList<>();
         Pageable pageable = PageRequest.of(page, size);
-        Page<Review> reviewPage = reviewRepository.findAllByHotelAndVerified(hotel, true, pageable);
+        Page<Review> reviewPage = reviewRepository.findAllByHotelAndVerifiedOrderByDateDesc(hotel, true, pageable);
         // also get user's unverified reviews and combine them
         if (page == 0 && authentication != null){
             reviewDTOs.addAll(reviewRepository
-                    .findAllByUserAndHotelAndVerified((User) authentication.getPrincipal(), hotel, false)
+                    .findAllByUserAndHotelAndVerifiedOrderByDateDesc((User) authentication.getPrincipal(), hotel, false)
                     .stream().map(this::convertReviewToDTO).toList());
         }
         reviewDTOs.addAll(reviewPage.map(this::convertReviewToDTO).getContent());
@@ -70,7 +70,7 @@ public class ReviewService {
     public ReviewResponse getUserReviews(User user, int page, int size) {
         // get reviews
         Pageable pageable = PageRequest.of(page, size);
-        Page<Review> reviewPage = reviewRepository.findAllByUser(user, pageable);
+        Page<Review> reviewPage = reviewRepository.findAllByUserOrderByDateDesc(user, pageable);
         Page<ReviewDTO> reviewDTOPage =  reviewPage.map(this::convertReviewToDTO);
         // return reviews
         return ReviewResponse.builder()
