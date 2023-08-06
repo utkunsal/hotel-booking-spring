@@ -16,16 +16,16 @@ Demo video (1m 38s):
 # Screenshots
 
 <p align="middle">
-  <img align="top" src="/screenshots/Screenshot-1.png" width="450" />
-  <img align="top" src="/screenshots/Screenshot-2.png" width="450" /> 
+  <img align="top" src="/screenshots/Screenshot-1.png" width="400" />
+  <img align="top" src="/screenshots/Screenshot-2.png" width="400" /> 
 </p>
 <p align="middle">
-  <img align="top" src="/screenshots/Screenshot-3.png" width="450" />
-  <img align="top" src="/screenshots/Screenshot-4.png" width="450" /> 
+  <img align="top" src="/screenshots/Screenshot-3.png" width="400" />
+  <img align="top" src="/screenshots/Screenshot-4.png" width="400" /> 
 </p>
 <p align="middle">
-  <img align="top" src="/screenshots/Screenshot-5.png" width="450" />
-  <img align="top" src="/screenshots/Screenshot-6.png" width="450" /> 
+  <img align="top" src="/screenshots/Screenshot-5.png" width="400" />
+  <img align="top" src="/screenshots/Screenshot-6.png" width="400" /> 
 </p>  
 
 
