@@ -33,7 +33,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public ResponseEntity<?> register(RegisterRequest request) {
-        return register(request, Role.ROLE_USER, false);
+        return register(request, Role.ROLE_USER, true);
     }
 
     public ResponseEntity<?> register(RegisterRequest request, Role role, boolean verified) {
