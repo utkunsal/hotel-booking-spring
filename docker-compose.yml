@@ -11,11 +11,23 @@ services:
     ports:
       - "5332:5432"
     networks:
-      - db
+      - app-network
     restart: unless-stopped
 
+  spring-app:
+    container_name: spring-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
 networks:
-  db:
+  app-network:
     driver: bridge
 
 volumes:
